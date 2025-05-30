@@ -19,22 +19,22 @@ async def main():
 	up_counter = 0
 	down_counter = 0
 	dehumid_flag = True
-	pressure_humidity = deque(maxlen=20)  # Store last 10 minutes
+	humidity_history = deque(maxlen=20)  # Store last 10 minutes
 	avg_humidity = 100
 
 	while True:
 		bme280_data = retrieve_and_store(dehumid_flag) #retrieve and store sensor data for Grafana
-		pressure_humidity.append(bme280_data.humidity)
+		humidity_history.append(bme280_data.humidity)
 		
 		# Check if we have enough history to calculate average
-		if len(pressure_humidity) == pressure_humidity.maxlen:
-			avg_humidity = statistics.mean(pressure_humidity)
+		if len(humidity_history) == humidity_history.maxlen:
+			avg_humidity = statistics.mean(humidity_history)
 		
 		#run algo to decide if dehumidifier should be on
-		if bme280_data.pressure > target_humidity + 2:
+		if bme280_data.humidity > target_humidity + 2:
 			up_counter = up_counter + 1
 
-		if bme280_data.pressure < target_humidity - 2:
+		if bme280_data.humidity < target_humidity - 2:
 			down_counter = down_counter + 1
 
 		if up_counter > 10 and dehumid_flag == False:
@@ -45,7 +45,7 @@ async def main():
 			await dehumid_off()
 			up_counter = 0
 			down_counter = 0
-		elif bme280_data.humidity >= avg_humidity and dehumid_flag == True and (len(pressure_humidity) == pressure_humidity.maxlen):
+		elif bme280_data.humidity >= avg_humidity and dehumid_flag == True and bme280_data.humidity < target_humidity and (len(humidity_history) == humidity_history.maxlen):
 			await dehumid_off()
 			up_counter = 0
 			down_counter = 0
