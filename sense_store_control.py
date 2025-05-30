@@ -20,7 +20,7 @@ async def main():
 	down_counter = 0
 	dehumid_flag = True
 	pressure_humidity = deque(maxlen=20)  # Store last 10 minutes
-	avg_humidity = 0
+	avg_humidity = 100
 
 	while True:
 		bme280_data = retrieve_and_store() #retrieve and store sensor data for Grafana
@@ -45,7 +45,7 @@ async def main():
 			await dehumid_off()
 			up_counter = 0
 			down_counter = 0
-		elif bme280_data.humidity >= avg_humidity and dehumid_flag == True:
+		elif bme280_data.humidity >= avg_humidity and dehumid_flag == True and (len(pressure_humidity) == pressure_humidity.maxlen):
 			await dehumid_off()
 			up_counter = 0
 			down_counter = 0
