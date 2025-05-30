@@ -13,7 +13,7 @@ port = 1
 address = 0x76
 bus = smbus2.SMBus(port)
 
-target_humidity = 50
+target_humidity = 51
 
 async def main():
 	up_counter = 0
