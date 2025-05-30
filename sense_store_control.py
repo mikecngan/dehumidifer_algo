@@ -31,7 +31,7 @@ async def main():
 			avg_humidity = statistics.mean(humidity_history)
 		
 		#run algo to decide if dehumidifier should be on
-		if bme280_data.humidity > target_humidity + 2:
+		if bme280_data.humidity > target_humidity + 3:
 			up_counter = up_counter + 1
 
 		if bme280_data.humidity < target_humidity - 2:
