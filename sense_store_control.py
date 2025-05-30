@@ -18,7 +18,7 @@ target_humidity = 51
 async def main():
 	up_counter = 0
 	down_counter = 0
-	dehumid_flag = True
+	dehumid_flag = get_dehumid_status()
 	humidity_history = deque(maxlen=20)  # Store last 10 minutes
 	avg_humidity = 100
 
@@ -41,14 +41,17 @@ async def main():
 			await dehumid_on()
 			up_counter = 0
 			down_counter = 0
+			dehumid_flag = get_dehumid_status()
 		elif down_counter > 10 and dehumid_flag == True:
 			await dehumid_off()
 			up_counter = 0
 			down_counter = 0
+			dehumid_flag = get_dehumid_status()
 		elif bme280_data.humidity >= avg_humidity and dehumid_flag == True and bme280_data.humidity < target_humidity and (len(humidity_history) == humidity_history.maxlen):
 			await dehumid_off()
 			up_counter = 0
 			down_counter = 0
+			dehumid_flag = get_dehumid_status()
 
 		time.sleep(30)
 	return
@@ -76,6 +79,13 @@ def retrieve_and_store(dehumid_flag):
 	print(f"Timestamp: {data.timestamp}, Humidity: {data.humidity} %H, Dehumidifier Status: {dehumid_flag}")
 
 	return data
+
+async def get_dehumid_status():
+	print("checking dehumidifier status")
+	dev = await Discover.discover_single("192.168.1.106")
+	await dev.update()
+	print(dev.is_on)
+	return dev.is_on
 
 async def dehumid_on():
 	print("dehumidifer on")
