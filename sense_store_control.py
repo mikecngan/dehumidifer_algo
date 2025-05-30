@@ -23,7 +23,7 @@ async def main():
 	avg_humidity = 100
 
 	while True:
-		bme280_data = retrieve_and_store() #retrieve and store sensor data for Grafana
+		bme280_data = retrieve_and_store(dehumid_flag) #retrieve and store sensor data for Grafana
 		pressure_humidity.append(bme280_data.humidity)
 		
 		# Check if we have enough history to calculate average
@@ -53,7 +53,7 @@ async def main():
 		time.sleep(30)
 	return
 	
-def retrieve_and_store():
+def retrieve_and_store(dehumid_flag):
 	calibration_params = bme280.load_calibration_params(bus, address)
 	data = bme280.sample(bus, address, calibration_params)
 
@@ -62,16 +62,18 @@ def retrieve_and_store():
 	g_temp = Gauge('sensor_temperature_celsius', 'Temperature in Celsius', registry=registry)
 	g_press = Gauge('sensor_pressure_hpa', 'Pressure in hPa', registry=registry)
 	g_hum = Gauge('sensor_humidity_percent', 'Humidity in %', registry=registry)
+	humidifer_status = Gauge('dehumid_flag', 'dehumidifer status flag', registry=registry)
+
 
 	g_temp.set(data.temperature)
 	g_press.set(data.pressure)
 	g_hum.set(data.humidity)
+	humidifer_status.set(int(dehumid_flag))
 
 	push_to_gateway('localhost:9091', job='bme280_sensor', registry=registry)
 
 	# Optional: print values
-	print(f"Timestamp: {data.timestamp}")
-	print(f"Humidity: {data.humidity} %H")
+	print(f"Timestamp: {data.timestamp}, Humidity: {data.humidity} %H, Dehumidifier Status: {dehumid_flag}")
 
 	return data
 
