@@ -20,6 +20,7 @@ async def main():
 	down_counter = 0
 	dehumid_flag = True
 	pressure_humidity = deque(maxlen=20)  # Store last 10 minutes
+	avg_humidity = 0
 
 	while True:
 		bme280_data = retrieve_and_store() #retrieve and store sensor data for Grafana
@@ -28,7 +29,6 @@ async def main():
 		# Check if we have enough history to calculate average
 		if len(pressure_humidity) == pressure_humidity.maxlen:
 			avg_humidity = statistics.mean(pressure_humidity)
-			
 		
 		#run algo to decide if dehumidifier should be on
 		if bme280_data.pressure > target_humidity + 2:
@@ -77,7 +77,7 @@ def retrieve_and_store():
 
 async def dehumid_on():
 	print("dehumidifer on")
-	dev = await Discover.discover_single("192.168.1.107")
+	dev = await Discover.discover_single("192.168.1.106")
 	await dev.turn_on()
 	await dev.update()
 	print(await dev.update())
@@ -85,7 +85,7 @@ async def dehumid_on():
 
 async def dehumid_off():
 	print("dehumidifer off")
-	dev = await Discover.discover_single("192.168.1.107")
+	dev = await Discover.discover_single("192.168.1.106")
 	await dev.turn_off()
 	await dev.update()
 	print(await dev.update())
