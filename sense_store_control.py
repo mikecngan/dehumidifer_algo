@@ -31,7 +31,7 @@ async def main():
 			avg_humidity = statistics.mean(humidity_history)
 		
 		#run algo to decide if dehumidifier should be on
-		if bme280_data.humidity > target_humidity + 3:
+		if bme280_data.humidity > target_humidity + 3.5:
 			up_counter = up_counter + 1
 
 		if bme280_data.humidity < target_humidity - 2:
@@ -41,16 +41,19 @@ async def main():
 			await dehumid_on()
 			up_counter = 0
 			down_counter = 0
+			print("Counter reset after dehumidifier on")
 			dehumid_flag = await get_dehumid_status()
 		elif down_counter > 10 and dehumid_flag == True:
 			await dehumid_off()
 			up_counter = 0
 			down_counter = 0
+			print("Counter reset after dehumidifier off")
 			dehumid_flag = await get_dehumid_status()
 		elif bme280_data.humidity >= avg_humidity and dehumid_flag == True and bme280_data.humidity < target_humidity and (len(humidity_history) == humidity_history.maxlen):
 			await dehumid_off()
 			up_counter = 0
 			down_counter = 0
+			print("Counter reset after dehumidifier off due to no humidity decrease")
 			dehumid_flag = await get_dehumid_status()
 
 		time.sleep(30)
@@ -84,23 +87,23 @@ async def get_dehumid_status():
 	print("checking dehumidifier status")
 	dev = await Discover.discover_single("192.168.1.106")
 	await dev.update()
-	print(dev.is_on)
+	print("Dehumidier is on: " + dev.is_on)
 	return dev.is_on
 
 async def dehumid_on():
-	print("dehumidifer on")
+	print("sending dehumidifer on signal")
 	dev = await Discover.discover_single("192.168.1.106")
 	await dev.turn_on()
 	await dev.update()
-	print(await dev.update())
+	await get_dehumid_status()
 	return
 
 async def dehumid_off():
-	print("dehumidifer off")
+	print("sending dehumidifer off signal")
 	dev = await Discover.discover_single("192.168.1.106")
 	await dev.turn_off()
 	await dev.update()
-	print(await dev.update())
+	await get_dehumid_status()
 	return
 	
 if __name__ == "__main__":
