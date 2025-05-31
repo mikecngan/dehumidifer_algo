@@ -87,7 +87,7 @@ async def get_dehumid_status():
 	print("checking dehumidifier status")
 	dev = await Discover.discover_single("192.168.1.106")
 	await dev.update()
-	print("Dehumidier is on: " + dev.is_on)
+	print("Dehumidier is on: " + str(dev.is_on))
 	return dev.is_on
 
 async def dehumid_on():
