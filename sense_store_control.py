@@ -43,6 +43,11 @@ async def main():
 			upper_bound = target_humidity + 2
 			lower_bound = target_humidity - 3.5
 			target_humidity = target_humidity - 1
+		if battery_life > 95: # really aggresive mode cause battery is full
+			target_humidity = target_humidity - 3
+			upper_bound = target_humidity + 2
+			lower_bound = target_humidity - 3.5
+			
 
 		if bme280_data.humidity > upper_bound:
 			up_counter = up_counter + 1
