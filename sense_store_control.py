@@ -9,11 +9,14 @@ from kasa import Discover
 from collections import deque
 import statistics
 
+import requests
+import re
+
 port = 1
 address = 0x76
 bus = smbus2.SMBus(port)
 
-target_humidity = 51
+target_humidity_normal = 51
 
 async def main():
 	up_counter = 0
@@ -31,10 +34,20 @@ async def main():
 			avg_humidity = statistics.mean(humidity_history)
 		
 		#run algo to decide if dehumidifier should be on
-		if bme280_data.humidity > target_humidity + 3.5:
+		target_humidity = target_humidity_normal
+		upper_bound = target_humidity + 3.5 # default mode
+		lower_bound = target_humidity - 2
+		battery_life = get_ecoflow_soc()
+		print(f"Battery life: {battery_life}%")
+		if battery_life > 85: # aggresive mode cause battery is full
+			upper_bound = target_humidity + 2
+			lower_bound = target_humidity - 3.5
+			target_humidity = target_humidity - 1
+
+		if bme280_data.humidity > upper_bound:
 			up_counter = up_counter + 1
 
-		if bme280_data.humidity < target_humidity - 2:
+		if bme280_data.humidity < lower_bound:
 			down_counter = down_counter + 1
 
 		if up_counter > 10 and dehumid_flag == False:
@@ -105,6 +118,20 @@ async def dehumid_off():
 	await dev.update()
 	await get_dehumid_status()
 	return
+
+def get_ecoflow_soc():
+	url = "http://raspberrypi.local:2112/metrics"
+	response = requests.get(url)
+	response.raise_for_status()
+	metrics = response.text
+
+	# Regex to match the line and extract the value
+	pattern = r'ecoflow_bms_master_f32_show_soc\{[^\}]*\}\s+([0-9.]+)'
+	match = re.search(pattern, metrics)
+	if match:
+		return float(match.group(1))
+	else:
+		raise ValueError("SOC value not found")
 	
 if __name__ == "__main__":
 	asyncio.run(main())
