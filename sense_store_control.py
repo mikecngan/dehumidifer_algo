@@ -120,18 +120,21 @@ async def dehumid_off():
 	return
 
 def get_ecoflow_soc():
-	url = "http://raspberrypi.local:2112/metrics"
-	response = requests.get(url)
-	response.raise_for_status()
-	metrics = response.text
+    url = "http://raspberrypi.local:2112/metrics"
+    try:
+        response = requests.get(url, timeout=5)
+        response.raise_for_status()
+        metrics = response.text
 
-	# Regex to match the line and extract the value
-	pattern = r'ecoflow_bms_master_f32_show_soc\{[^\}]*\}\s+([0-9.]+)'
-	match = re.search(pattern, metrics)
-	if match:
-		return float(match.group(1))
-	else:
-		raise ValueError("SOC value not found")
+        # Regex to match the line and extract the value (serial number not exposed)
+        pattern = r'ecoflow_bms_master_f32_show_soc\{[^\}]*\}\s+([0-9.]+)'
+        match = re.search(pattern, metrics)
+        if match:
+            return float(match.group(1))
+        else:
+            return 0
+    except Exception:
+        return 0
 	
 if __name__ == "__main__":
 	asyncio.run(main())
