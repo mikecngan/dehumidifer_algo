@@ -24,10 +24,16 @@ async def main():
 	dehumid_flag = await get_dehumid_status()
 	humidity_history = deque(maxlen=20)  # Store last 10 minutes
 	avg_humidity = 100
+	loop_counter = 0
 
 	while True:
 		bme280_data = retrieve_and_store(dehumid_flag) #retrieve and store sensor data for Grafana
 		humidity_history.append(bme280_data.humidity)
+		loop_counter += 1
+
+		# Every 10 loops, check the dehumidifier status
+		if loop_counter % 10 == 0:
+			dehumid_flag = await get_dehumid_status()
 		
 		# Check if we have enough history to calculate average
 		if len(humidity_history) == humidity_history.maxlen:
