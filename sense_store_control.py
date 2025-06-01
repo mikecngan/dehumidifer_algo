@@ -47,11 +47,10 @@ async def main():
 		battery_life = get_ecoflow_soc()
 		print(f"Battery life: {battery_life}%")
 		if battery_life > 85: # aggresive mode cause battery is full
+			print("Battery life is high, setting aggressive mode")
 			upper_bound = target_humidity + 2
 			lower_bound = target_humidity - 3.5
 			target_humidity = target_humidity - 1
-		if battery_life > 95: 
-			pass  # Placeholder for future logic
 
 		if bme280_data.humidity > upper_bound:
 			up_counter = up_counter + 1
