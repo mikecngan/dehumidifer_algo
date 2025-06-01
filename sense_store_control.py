@@ -33,6 +33,7 @@ async def main():
 
 		# Every 10 loops, check the dehumidifier status
 		if loop_counter % 10 == 0:
+			print("Regular 5 minute dehumidifier status update")
 			dehumid_flag = await get_dehumid_status()
 		
 		# Check if we have enough history to calculate average
@@ -49,11 +50,8 @@ async def main():
 			upper_bound = target_humidity + 2
 			lower_bound = target_humidity - 3.5
 			target_humidity = target_humidity - 1
-		if battery_life > 95: # really aggresive mode cause battery is full
-			target_humidity = target_humidity - 3
-			upper_bound = target_humidity + 2
-			lower_bound = target_humidity - 3.5
-			
+		if battery_life > 95: 
+			pass  # Placeholder for future logic
 
 		if bme280_data.humidity > upper_bound:
 			up_counter = up_counter + 1
@@ -61,23 +59,29 @@ async def main():
 		if bme280_data.humidity < lower_bound:
 			down_counter = down_counter + 1
 
-		if up_counter > 10 and dehumid_flag == False:
+		if battery_life > 95: # just be on cause battery is full
 			await dehumid_on()
 			up_counter = 0
 			down_counter = 0
-			print("Counter reset after dehumidifier on")
+			print("Counter reset, battery is full, dehumidifier on")
+			dehumid_flag = await get_dehumid_status()
+		elif up_counter > 10 and dehumid_flag == False:
+			await dehumid_on()
+			up_counter = 0
+			down_counter = 0
+			print("Counter reset, dehumidifier on")
 			dehumid_flag = await get_dehumid_status()
 		elif down_counter > 10 and dehumid_flag == True:
 			await dehumid_off()
 			up_counter = 0
 			down_counter = 0
-			print("Counter reset after dehumidifier off")
+			print("Counter reset, dehumidifier off")
 			dehumid_flag = await get_dehumid_status()
 		elif bme280_data.humidity >= avg_humidity and dehumid_flag == True and bme280_data.humidity < target_humidity and (len(humidity_history) == humidity_history.maxlen):
 			await dehumid_off()
 			up_counter = 0
 			down_counter = 0
-			print("Counter reset after dehumidifier off due to no humidity decrease")
+			print("Counter reset, dehumidifier off due to no humidity decrease")
 			dehumid_flag = await get_dehumid_status()
 
 		time.sleep(30)
