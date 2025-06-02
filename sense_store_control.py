@@ -59,11 +59,13 @@ async def main():
 			down_counter = down_counter + 1
 
 		if battery_life > 95: # just be on cause battery is full
-			await dehumid_on()
+			if dehumid_flag == False:
+				await dehumid_on()
 			up_counter = 0
 			down_counter = 0
 			print("Counter reset, battery is full, dehumidifier on")
-			dehumid_flag = await get_dehumid_status()
+			if dehumid_flag == False:
+				dehumid_flag = await get_dehumid_status()
 		elif up_counter > 10 and dehumid_flag == False:
 			await dehumid_on()
 			up_counter = 0
