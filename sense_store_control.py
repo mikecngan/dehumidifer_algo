@@ -63,26 +63,26 @@ async def main():
 				await dehumid_on()
 			up_counter = 0
 			down_counter = 0
-			print("Counter reset, battery is full, dehumidifier on")
+			print("Counter reset, battery is full, dehumidifier on attempted")
 			if dehumid_flag == False:
 				dehumid_flag = await get_dehumid_status()
 		elif up_counter > 10 and dehumid_flag == False:
 			await dehumid_on()
 			up_counter = 0
 			down_counter = 0
-			print("Counter reset, dehumidifier on")
+			print("Counter reset, dehumidifier on attempted")
 			dehumid_flag = await get_dehumid_status()
 		elif down_counter > 10 and dehumid_flag == True:
 			await dehumid_off()
 			up_counter = 0
 			down_counter = 0
-			print("Counter reset, dehumidifier off")
+			print("Counter reset, dehumidifier off attempted")
 			dehumid_flag = await get_dehumid_status()
 		elif bme280_data.humidity >= avg_humidity and dehumid_flag == True and bme280_data.humidity < target_humidity and (len(humidity_history) == humidity_history.maxlen):
 			await dehumid_off()
 			up_counter = 0
 			down_counter = 0
-			print("Counter reset, dehumidifier off due to no humidity decrease")
+			print("Counter reset, dehumidifier off attempted due to no humidity decrease")
 			dehumid_flag = await get_dehumid_status()
 
 		time.sleep(30)
@@ -113,27 +113,37 @@ def retrieve_and_store(dehumid_flag):
 	return data
 
 async def get_dehumid_status():
-	print("checking dehumidifier status")
-	dev = await Discover.discover_single("192.168.1.106")
-	await dev.update()
-	print("Dehumidier is on: " + str(dev.is_on))
-	return dev.is_on
+    print("checking dehumidifier status")
+    try:
+        dev = await Discover.discover_single("192.168.1.106")
+        await dev.update()
+        print("Dehumidier is on: " + str(dev.is_on))
+        return dev.is_on
+    except Exception as e:
+        print(f"Error checking dehumidifier status: {e}")
+        return False
 
 async def dehumid_on():
-	print("sending dehumidifer on signal")
-	dev = await Discover.discover_single("192.168.1.106")
-	await dev.turn_on()
-	await dev.update()
-	await get_dehumid_status()
-	return
+    print("sending dehumidifer on signal")
+    try:
+        dev = await Discover.discover_single("192.168.1.106")
+        await dev.turn_on()
+        await dev.update()
+        await get_dehumid_status()
+    except Exception as e:
+        print(f"Dehumidifier ON signal failed: {e}")
+    return
 
 async def dehumid_off():
-	print("sending dehumidifer off signal")
-	dev = await Discover.discover_single("192.168.1.106")
-	await dev.turn_off()
-	await dev.update()
-	await get_dehumid_status()
-	return
+    print("sending dehumidifer off signal")
+    try:
+        dev = await Discover.discover_single("192.168.1.106")
+        await dev.turn_off()
+        await dev.update()
+        await get_dehumid_status()
+    except Exception as e:
+        print(f"Dehumidifier OFF signal failed: {e}")
+    return
 
 def get_ecoflow_soc():
     url = "http://raspberrypi.local:2112/metrics"
