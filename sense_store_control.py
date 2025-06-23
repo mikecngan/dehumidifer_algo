@@ -81,7 +81,7 @@ async def main():
 		#elif bme280_data.humidity >= avg_humidity and dehumid_flag == True and bme280_data.humidity < target_humidity and (len(humidity_history) == humidity_history.maxlen):
 		elif bme280_data.humidity >= avg_humidity and dehumid_flag == True and (len(humidity_history) == humidity_history.maxlen):
 			await dehumid_off()
-			up_counter = 0
+			up_counter = -20 # delay counter to prevent dehumidifier from turning on again for an additiona 10 minutes
 			down_counter = 0
 			print("Counter reset, dehumidifier off attempted due to no humidity decrease")
 			dehumid_flag = await get_dehumid_status()
