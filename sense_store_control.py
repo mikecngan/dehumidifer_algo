@@ -21,6 +21,7 @@ target_humidity_normal = 51
 async def main():
 	up_counter = 0
 	down_counter = 0
+	on_counter = 0 #how long dehumidifier in 5 minute counters
 	dehumid_flag = await get_dehumid_status()
 	humidity_history = deque(maxlen=20)  # Store last 10 minutes
 	avg_humidity = 100
@@ -35,7 +36,11 @@ async def main():
 		if loop_counter % 10 == 0:
 			print("Regular 5 minute dehumidifier status update")
 			dehumid_flag = await get_dehumid_status()
-		
+			if dehumid_flag == True:
+				on_counter += 1
+			else:
+				on_counter = 0
+				
 		# Check if we have enough history to calculate average
 		if len(humidity_history) == humidity_history.maxlen:
 			avg_humidity = statistics.mean(humidity_history)
@@ -79,7 +84,8 @@ async def main():
 			print("Down counter hit, Counter reset, dehumidifier off attempted")
 			dehumid_flag = await get_dehumid_status()
 		#elif bme280_data.humidity >= avg_humidity and dehumid_flag == True and bme280_data.humidity < target_humidity and (len(humidity_history) == humidity_history.maxlen):
-		elif bme280_data.humidity >= avg_humidity and dehumid_flag == True and (len(humidity_history) == humidity_history.maxlen):
+		#if humidity is not decreasing and dehumidifier is on for 3*5 minutes and algo has been running for awhile, turn it off
+		elif bme280_data.humidity >= avg_humidity and on_counter > 3 and dehumid_flag == True and (len(humidity_history) == humidity_history.maxlen):
 			await dehumid_off()
 			up_counter = -20 # delay counter to prevent dehumidifier from turning on again for an additiona 10 minutes
 			down_counter = 0
