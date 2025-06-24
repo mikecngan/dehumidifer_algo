@@ -89,6 +89,7 @@ async def main():
 			await dehumid_off()
 			up_counter = -20 # delay counter to prevent dehumidifier from turning on again for an additiona 10 minutes
 			down_counter = 0
+			on_counter = 0
 			print("Counter reset, dehumidifier off attempted due to no humidity decrease")
 			dehumid_flag = await get_dehumid_status()
 
