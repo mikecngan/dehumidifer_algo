@@ -94,7 +94,7 @@ async def main():
 
 		#print current values for debugging
 		print("BEGIN DEBUGGING INFO")
-		print(f"Humidity: {bme280_data.humidity}%, Up Counter: {up_counter}, Down Counter: {down_counter}, Avg Humidity: {avg_humidity}%, Dehumidifier Status: {dehumid_flag}")
+		print(f"Humidity: {bme280_data.humidity}%, Up Counter: {up_counter}, Down Counter: {down_counter}, On Counter: {on_counter}, Avg Humidity: {avg_humidity}%, Dehumidifier Status: {dehumid_flag}")
 		print(f"Upper Bound: {upper_bound}, Lower Bound: {lower_bound}, Target Humidity: {target_humidity}")
 		print("--------------- END DEBUGGING INFO AND LOOP ---------------")
 		time.sleep(30)
