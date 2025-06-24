@@ -70,13 +70,13 @@ async def main():
 			await dehumid_on()
 			up_counter = 0
 			down_counter = 0
-			print("Counter reset, dehumidifier on attempted")
+			print("Up counter hit, Counter reset, dehumidifier on attempted")
 			dehumid_flag = await get_dehumid_status()
 		elif down_counter > 10 and dehumid_flag == True:
 			await dehumid_off()
 			up_counter = 0
 			down_counter = 0
-			print("Counter reset, dehumidifier off attempted")
+			print("Down counter hit, Counter reset, dehumidifier off attempted")
 			dehumid_flag = await get_dehumid_status()
 		#elif bme280_data.humidity >= avg_humidity and dehumid_flag == True and bme280_data.humidity < target_humidity and (len(humidity_history) == humidity_history.maxlen):
 		elif bme280_data.humidity >= avg_humidity and dehumid_flag == True and (len(humidity_history) == humidity_history.maxlen):
@@ -86,6 +86,11 @@ async def main():
 			print("Counter reset, dehumidifier off attempted due to no humidity decrease")
 			dehumid_flag = await get_dehumid_status()
 
+		#print current values for debugging
+		print("BEGIN DEBUGGING INFO")
+		print(f"Humidity: {bme280_data.humidity}%, Up Counter: {up_counter}, Down Counter: {down_counter}, Avg Humidity: {avg_humidity}%, Dehumidifier Status: {dehumid_flag}")
+		print(f"Upper Bound: {upper_bound}, Lower Bound: {lower_bound}, Target Humidity: {target_humidity}")
+		print("END DEBUGGING INFO")
 		time.sleep(30)
 	return
 	
